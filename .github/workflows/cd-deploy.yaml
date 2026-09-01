@@ -26,13 +26,15 @@ jobs:
 
       - name: Configure Dynamic Environment Context
         run: |
-          ENV_NAME="${{ github.ref_name == 'main' && 'prod' || 'dev' }}"
+          HEAD_BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          ENV_NAME="${{ (HEAD_BRANCH == 'main' || HEAD_BRANCH == 'refs/heads/main') && 'prod' || 'dev' }}"
           echo "ENV_NAME=${ENV_NAME}" >> $GITHUB_ENV
           echo "GKE_CLUSTER=qsr-gke-cluster-${ENV_NAME}" >> $GITHUB_ENV
           echo "WIF_PROVIDER=projects/${{ env.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-actions-pool-${ENV_NAME}/providers/github-actions-provider" >> $GITHUB_ENV
           echo "WIF_SERVICE_ACCOUNT=qsr-cicd-sa-${ENV_NAME}@${{ env.GCP_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_ENV
 
       - name: Authenticate to GCP via WIF
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}

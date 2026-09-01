@@ -33,6 +33,7 @@ jobs:
           echo "WIF_SERVICE_ACCOUNT=qsr-cicd-sa-${ENV_NAME}@${{ env.GCP_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_ENV
 
       - name: Authenticate to GCP via WIF
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
