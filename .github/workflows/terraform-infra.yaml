@@ -46,7 +46,7 @@ jobs:
 
       - name: Terraform Init & Apply
         run: |
-          echo "==> Running Terraform Apply for environment: ${ENV_NAME}"
+          echo "==> Running Non-Interactive Terraform Apply for environment: ${ENV_NAME}"
           cd terraform/environments/${ENV_NAME}
-          terraform init
-          terraform apply -auto-approve
+          terraform init -input=false
+          terraform apply -input=false -auto-approve -var-file="terraform.tfvars"

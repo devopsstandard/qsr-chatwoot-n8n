@@ -1,6 +1,7 @@
 variable "project_id" {
   type        = string
   description = "GCP Project ID for dev"
+  default     = "festive-ally-443007-r4"
 }
 
 variable "region" {
@@ -12,4 +13,5 @@ variable "region" {
 variable "github_repo" {
   type        = string
   description = "GitHub repository (org/repo)"
+  default     = "devopsstandard/qsr-chatwoot-n8n"
 }
