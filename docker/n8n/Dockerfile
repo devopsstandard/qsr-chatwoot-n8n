@@ -1,7 +1,7 @@
 # ==========================================
 # Production Non-Root n8n Container
 # ==========================================
-FROM n8nio/n8n:1.30.0
+FROM n8nio/n8n:latest
 
 USER root
 
