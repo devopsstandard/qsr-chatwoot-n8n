@@ -14,7 +14,7 @@ env:
   GCP_REGION: us-central1
   GCP_PROJECT: festive-ally-443007-r4
   GKE_CLUSTER: qsr-gke-cluster-dev
-  WIF_PROVIDER: projects/festive-ally-443007-r4/locations/global/workloadIdentityPools/github-actions-pool-dev/providers/github-actions-provider
+  WIF_PROVIDER: projects/1056322721883/locations/global/workloadIdentityPools/github-actions-pool-dev/providers/github-actions-provider
   WIF_SERVICE_ACCOUNT: qsr-cicd-sa-dev@festive-ally-443007-r4.iam.gserviceaccount.com
 
 jobs:
