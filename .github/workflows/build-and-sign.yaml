@@ -52,49 +52,31 @@ jobs:
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.access_token }}
 
-      - name: Extract Image Metadata & Tags
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.AR_REPOSITORY }}/${{ matrix.service }}
-          tags: |
-            type=sha,prefix=
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-
-      - name: Build Docker Container Image
+      - name: Build & Push Docker Container Image
+        id: build-push
         uses: docker/build-push-action@v5
         with:
           context: .
           file: docker/${{ matrix.service }}/Dockerfile
-          load: true
-          tags: ${{ steps.meta.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          push: true
+          tags: |
+            ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ env.ENV_NAME }}
+            ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ github.sha }}
 
       - name: Vulnerability Scan (Trivy CVE Gating)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ matrix.service }}:${{ steps.meta.outputs.version }}
+          image-ref: ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ env.ENV_NAME }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-      - name: Push Container Image to Artifact Registry
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: docker/${{ matrix.service }}/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-
       - name: Install Sigstore Cosign
         uses: sigstore/cosign-installer@v3.5.0
 
       - name: Sign Container Image with Cloud KMS (Cosign)
         run: |
-          IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ steps.meta.outputs.version }})
-          echo "==> Signing image digest: ${IMAGE_DIGEST} with KMS key..."
-          cosign sign --key ${{ env.KMS_KEY_ID }} --yes ${IMAGE_DIGEST}
+          echo "==> Signing image: ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ env.ENV_NAME }} with KMS key..."
+          cosign sign --key ${{ env.KMS_KEY_ID }} --yes ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ env.ENV_NAME }}
