@@ -1,0 +1,46 @@
+name: Terraform Infrastructure Pipeline
+
+on:
+  push:
+    branches: [ main, dev ]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform-infra.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_REGION: us-central1
+  GCP_PROJECT: festive-ally-443007-r4
+  WIF_PROVIDER: projects/1056322721883/locations/global/workloadIdentityPools/github-actions-pool-dev/providers/github-actions-provider
+  WIF_SERVICE_ACCOUNT: qsr-cicd-sa-dev@festive-ally-443007-r4.iam.gserviceaccount.com
+
+jobs:
+  terraform-apply:
+    name: Terraform Init, Plan & Apply
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP via WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: Terraform Init & Apply
+        run: |
+          ENVIRONMENT="${{ github.ref_name == 'main' && 'prod' || 'dev' }}"
+          echo "==> Running Terraform Apply for environment: ${ENVIRONMENT}"
+          cd terraform/environments/${ENVIRONMENT}
+          terraform init
+          terraform apply -auto-approve

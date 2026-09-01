@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n-worker
+  namespace: default
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/component: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: n8n
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: n8n
+        app.kubernetes.io/component: worker
+    spec:
+      serviceAccountName: cloudsql-proxy-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      nodeSelector:
+        workload-type: spot
+      tolerations:
+        - key: "workload"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
+      containers:
+        # n8n Queue Worker Container
+        - name: n8n-worker
+          image: us-central1-docker.pkg.dev/qsr-platform-prod/qsr-containers-prod/n8n:latest
+          imagePullPolicy: Always
+          command: ["n8n", "worker"]
+          env:
+            - name: DB_TYPE
+              value: "postgresdb"
+            - name: DB_POSTGRESDB_HOST
+              value: "127.0.0.1"
+            - name: DB_POSTGRESDB_PORT
+              value: "5432"
+            - name: DB_POSTGRESDB_DATABASE
+              value: "n8n_production"
+            - name: EXECUTIONS_MODE
+              value: "queue"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+
+        # Cloud SQL Proxy Sidecar for n8n DB
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.11.0
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "qsr-platform-prod:us-central1:qsr-sql-n8n-prod"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

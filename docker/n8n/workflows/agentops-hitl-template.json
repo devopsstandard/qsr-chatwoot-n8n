@@ -1,0 +1,124 @@
+{
+  "name": "QSR AgentOps Monitor & Slack HITL Approval Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot-webhook",
+        "options": {}
+      },
+      "name": "Chatwoot Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import os\ntry:\n    import agentops\n    api_key = os.environ.get('AGENTOPS_API_KEY')\n    if api_key:\n        agentops.init(api_key=api_key, default_tags=['qsr-agent', 'chatwoot'])\nexcept Exception as e:\n    pass\n\nreturn [{'json': {'conversation_id': $json.get('id'), 'message': $json.get('content'), 'session_started': True}}]"
+      },
+      "name": "AgentOps Session Tracker",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.confidence_score || 0.75 }}",
+              "operation": "lessThan",
+              "value2": 0.85
+            }
+          ]
+        }
+      },
+      "name": "Confidence & Policy Guardrail Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [540, 300]
+    },
+    {
+      "parameters": {
+        "channel": "#agent-hitl-approvals",
+        "text": "⚠️ *QSR AI Agent Human-in-the-Loop Request*",
+        "jsonParameters": true,
+        "otherOptions": {},
+        "blocksUi": {
+          "blocksValues": [
+            {
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": "*Customer Message:* {{ $json.message }}\n*Confidence Score:* {{ $json.confidence_score || 0.75 }}\n*Proposed Action:* Refund Order #1042 ($28.50)"
+              }
+            },
+            {
+              "type": "actions",
+              "elements": [
+                {
+                  "type": "button",
+                  "text": { "type": "plain_text", "text": "✅ Approve Refund" },
+                  "style": "primary",
+                  "value": "approve"
+                },
+                {
+                  "type": "button",
+                  "text": { "type": "plain_text", "text": "👤 Handover to Chatwoot Human Agent" },
+                  "style": "danger",
+                  "value": "escalate"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "name": "Post Slack Approval Request",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [780, 200]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "webhookSuffix": "slack-approval"
+      },
+      "name": "Wait For Human Approval",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1000, 200]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "url": "=https://chatwoot.devopsstandard.name.ng/api/v1/accounts/1/conversations/{{ $json.conversation_id }}/messages",
+        "options": {}
+      },
+      "name": "Send Chatwoot Response",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1220, 300]
+    }
+  ],
+  "connections": {
+    "Chatwoot Webhook Trigger": {
+      "main": [[{ "node": "AgentOps Session Tracker", "type": "main", "index": 0 }]]
+    },
+    "AgentOps Session Tracker": {
+      "main": [[{ "node": "Confidence & Policy Guardrail Check", "type": "main", "index": 0 }]]
+    },
+    "Confidence & Policy Guardrail Check": {
+      "main": [
+        [{ "node": "Post Slack Approval Request", "type": "main", "index": 0 }],
+        [{ "node": "Send Chatwoot Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Post Slack Approval Request": {
+      "main": [[{ "node": "Wait For Human Approval", "type": "main", "index": 0 }]]
+    },
+    "Wait For Human Approval": {
+      "main": [[{ "node": "Send Chatwoot Response", "type": "main", "index": 0 }]]
+    }
+  }
+}

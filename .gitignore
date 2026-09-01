@@ -1,0 +1,29 @@
+# Terraform local files
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+terraform.tfvars
+
+# Node & Build artifacts
+node_modules/
+dist/
+.n8n/
+
+# Temporary migration dumps
+/tmp/qsr-db-dumps/
+*.dump
+*.pgdump
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

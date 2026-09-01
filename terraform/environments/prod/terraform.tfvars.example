@@ -1,0 +1,3 @@
+project_id  = "qsr-platform-prod"
+region      = "us-central1"
+github_repo = "your-org/qsr-platform-infra"

@@ -1,0 +1,82 @@
+name: PR Validation & Supply-Chain Checks
+
+on:
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  gitleaks-secret-scan:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker-lint:
+    name: Dockerfile Linting (Hadolint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Hadolint Chatwoot
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: docker/chatwoot/Dockerfile
+          config: .hadolint.yaml
+
+      - name: Hadolint n8n
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: docker/n8n/Dockerfile
+          config: .hadolint.yaml
+
+  terraform-validate:
+    name: Terraform Format & Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive terraform/
+
+      - name: Terraform Init & Validate (Dev)
+        run: |
+          cd terraform/environments/dev
+          terraform init -backend=false
+          terraform validate
+
+      - name: Terraform Init & Validate (Prod)
+        run: |
+          cd terraform/environments/prod
+          terraform init -backend=false
+          terraform validate
+
+  kustomize-lint:
+    name: Kustomize Manifest Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Build Kustomize Dev Overlay
+        run: kustomize build k8s/overlays/dev > /dev/null
+
+      - name: Build Kustomize Prod Overlay
+        run: kustomize build k8s/overlays/prod > /dev/null

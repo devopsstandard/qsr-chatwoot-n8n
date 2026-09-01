@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: qsr-ingress-dev
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+spec:
+  rules:
+    - host: dev-chatwoot.devopsstandard.name.ng
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: chatwoot-service
+                port:
+                  number: 80
+    - host: dev-n8n.devopsstandard.name.ng
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: n8n-service
+                port:
+                  number: 80

@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatwoot-web
+  namespace: default
+  labels:
+    app.kubernetes.io/name: chatwoot
+    app.kubernetes.io/component: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: chatwoot
+      app.kubernetes.io/component: web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: chatwoot
+        app.kubernetes.io/component: web
+    spec:
+      serviceAccountName: cloudsql-proxy-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      nodeSelector:
+        workload-type: ondemand
+      containers:
+        # Chatwoot Rails Web Container
+        - name: chatwoot-web
+          image: us-central1-docker.pkg.dev/qsr-platform-prod/qsr-containers-prod/chatwoot:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: RAILS_ENV
+              value: "production"
+            - name: POSTGRES_HOST
+              value: "127.0.0.1" # Connecting via local Cloud SQL Proxy sidecar
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DATABASE
+              value: "chatwoot_production"
+            - name: ACTIVE_STORAGE_SERVICE
+              value: "google"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+          readinessProbe:
+            httpGet:
+              path: /api
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api
+              port: 3000
+            initialDelaySeconds: 40
+            periodSeconds: 15
+
+        # Cloud SQL Auth Proxy Sidecar
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.11.0
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "qsr-platform-prod:us-central1:qsr-sql-chatwoot-prod"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

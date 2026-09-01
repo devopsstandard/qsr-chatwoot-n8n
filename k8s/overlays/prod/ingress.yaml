@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: qsr-ingress-prod
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    networking.gke.io/managed-certificates: "qsr-managed-cert"
+spec:
+  rules:
+    - host: chatwoot.devopsstandard.name.ng
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: chatwoot-service
+                port:
+                  number: 80
+    - host: n8n.devopsstandard.name.ng
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: n8n-service
+                port:
+                  number: 80
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: qsr-managed-cert
+  namespace: default
+spec:
+  domains:
+    - chatwoot.devopsstandard.name.ng
+    - n8n.devopsstandard.name.ng

@@ -1,0 +1,93 @@
+name: Build, Vulnerability Scan & Cosign KMS Sign
+
+on:
+  push:
+    branches: [ main, dev ]
+    tags: [ 'v*' ]
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_REGION: us-central1
+  GCP_PROJECT: festive-ally-443007-r4
+  AR_REPOSITORY: us-central1-docker.pkg.dev/festive-ally-443007-r4/qsr-containers-dev
+  WIF_PROVIDER: projects/festive-ally-443007-r4/locations/global/workloadIdentityPools/github-actions-pool-dev/providers/github-actions-provider
+  WIF_SERVICE_ACCOUNT: qsr-cicd-sa-dev@festive-ally-443007-r4.iam.gserviceaccount.com
+  KMS_KEY_ID: gcpkms://projects/festive-ally-443007-r4/locations/us-central1/keyRings/qsr-keyring-dev/cryptoKeys/cosign-signing-key/cryptoKeyVersions/1
+
+jobs:
+  build-scan-sign:
+    name: Build, Scan & Cosign KMS Sign
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [chatwoot, n8n]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP via Workload Identity Federation (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+          token_format: 'access_token'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GCP Artifact Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.GCP_REGION }}-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Extract Image Metadata & Tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.AR_REPOSITORY }}/${{ matrix.service }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+
+      - name: Build Docker Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/${{ matrix.service }}/Dockerfile
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Vulnerability Scan (Trivy CVE Gating)
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: ${{ matrix.service }}:${{ steps.meta.outputs.version }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push Container Image to Artifact Registry
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+
+      - name: Install Sigstore Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Sign Container Image with Cloud KMS (Cosign)
+        run: |
+          IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ steps.meta.outputs.version }})
+          echo "==> Signing image digest: ${IMAGE_DIGEST} with KMS key..."
+          cosign sign --key ${{ env.KMS_KEY_ID }} --yes ${IMAGE_DIGEST}

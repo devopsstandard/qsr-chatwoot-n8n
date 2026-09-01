@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatwoot-worker
+  namespace: default
+  labels:
+    app.kubernetes.io/name: chatwoot
+    app.kubernetes.io/component: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: chatwoot
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: chatwoot
+        app.kubernetes.io/component: worker
+    spec:
+      serviceAccountName: cloudsql-proxy-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      nodeSelector:
+        workload-type: spot
+      tolerations:
+        - key: "workload"
+          operator: "Equal"
+          value: "spot"
+          effect: "NoSchedule"
+      containers:
+        # Chatwoot Sidekiq Worker Container
+        - name: chatwoot-worker
+          image: us-central1-docker.pkg.dev/qsr-platform-prod/qsr-containers-prod/chatwoot:latest
+          imagePullPolicy: Always
+          command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+          env:
+            - name: RAILS_ENV
+              value: "production"
+            - name: POSTGRES_HOST
+              value: "127.0.0.1"
+            - name: POSTGRES_PORT
+              value: "5432"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+
+        # Cloud SQL Proxy Sidecar
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.11.0
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "qsr-platform-prod:us-central1:qsr-sql-chatwoot-prod"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloudsql-proxy-sa
+  namespace: default
+  annotations:
+    iam.gke.io/gcp-service-account: "qsr-cloudsql-sa-prod@qsr-platform-prod.iam.gserviceaccount.com"

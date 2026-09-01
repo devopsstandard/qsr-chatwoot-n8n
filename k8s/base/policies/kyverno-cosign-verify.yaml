@@ -1,0 +1,27 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: verify-cosign-kms-signature
+  annotations:
+    policies.kyverno.io/title: Verify Cosign KMS Image Signatures
+    policies.kyverno.io/category: Supply Chain Security (SLSA Level 3)
+    policies.kyverno.io/severity: high
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: verify-signature
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      verifyImages:
+        - imageReferences:
+            - "us-central1-docker.pkg.dev/qsr-platform-prod/qsr-containers-prod/*"
+          key: |
+            -----BEGIN PUBLIC KEY-----
+            # Cosign Public Key retrieved from KMS KeyRing
+            -----END PUBLIC KEY-----
+          mutateDigest: true
+          verifyDigest: true

@@ -1,0 +1,20 @@
+title = "Gitleaks Security Configuration for QSR Platform Infra"
+
+[allowlist]
+description = "Global allowlist for dummy test variables and example files"
+files = [
+  '''terraform\.tfvars\.example$''',
+  '''README\.md$'''
+]
+
+[[rules]]
+id = "gcp-api-key"
+description = "GCP API Key"
+regex = '''(?i)(google|gcp|youtube|drive|speech|vision)[a-z0-9_]*[\s:=]+["'](AIza[0-9A-Za-z-_]{35})["']'''
+tags = ["key", "gcp"]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(db_password|password|secret|api_key|access_token)[\s:=]+["']([a-zA-Z0-9_\-]{16,})["']'''
+tags = ["key", "generic"]

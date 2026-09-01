@@ -1,0 +1,12 @@
+# Global Infrastructure & Security Codeowners
+*                       @devops-lead @security-lead
+
+# Terraform IaC Modules
+/terraform/             @devops-lead
+
+# Kubernetes Manifests & Security Policies
+/k8s/                   @devops-lead @k8s-team
+/k8s/base/policies/     @security-lead
+
+# Workflows & CI/CD Pipelines
+/.github/workflows/     @security-lead @devops-lead
