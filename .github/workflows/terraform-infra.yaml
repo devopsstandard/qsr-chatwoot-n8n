@@ -14,8 +14,6 @@ permissions:
 
 env:
   GCP_REGION: us-central1
-  GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID || 'festive-ally-443007-r4' }}
-  GCP_PROJECT_NUMBER: ${{ secrets.GCP_PROJECT_NUMBER || '1056322721883' }}
 
 jobs:
   terraform-apply:
@@ -27,10 +25,18 @@ jobs:
 
       - name: Configure Dynamic Environment Context
         run: |
+          PROJ_ID="${{ secrets.GCP_PROJECT_ID }}"
+          if [ -z "$PROJ_ID" ]; then PROJ_ID="festive-ally-443007-r4"; fi
+          echo "GCP_PROJECT=${PROJ_ID}" >> $GITHUB_ENV
+
+          PROJ_NUM="${{ secrets.GCP_PROJECT_NUMBER }}"
+          if [ -z "$PROJ_NUM" ]; then PROJ_NUM="1056322721883"; fi
+          echo "GCP_PROJECT_NUMBER=${PROJ_NUM}" >> $GITHUB_ENV
+
           ENV_NAME="${{ github.ref_name == 'main' && 'prod' || 'dev' }}"
           echo "ENV_NAME=${ENV_NAME}" >> $GITHUB_ENV
-          echo "WIF_PROVIDER=projects/${{ env.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-actions-pool-${ENV_NAME}/providers/github-actions-provider" >> $GITHUB_ENV
-          echo "WIF_SERVICE_ACCOUNT=qsr-cicd-sa-${ENV_NAME}@${{ env.GCP_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_ENV
+          echo "WIF_PROVIDER=projects/${PROJ_NUM}/locations/global/workloadIdentityPools/github-actions-pool-${ENV_NAME}/providers/github-actions-provider" >> $GITHUB_ENV
+          echo "WIF_SERVICE_ACCOUNT=qsr-cicd-sa-${ENV_NAME}@${PROJ_ID}.iam.gserviceaccount.com" >> $GITHUB_ENV
 
       - name: Authenticate to GCP via WIF
         id: auth
