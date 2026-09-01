@@ -35,6 +35,7 @@ jobs:
           echo "KMS_KEY_ID=gcpkms://projects/${{ env.GCP_PROJECT }}/locations/${{ env.GCP_REGION }}/keyRings/qsr-keyring-${ENV_NAME}/cryptoKeys/cosign-signing-key/cryptoKeyVersions/1" >> $GITHUB_ENV
 
       - name: Authenticate to GCP via Workload Identity Federation (WIF)
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
