@@ -66,7 +66,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Vulnerability Scan (Trivy CVE Gating)
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ matrix.service }}:${{ steps.meta.outputs.version }}
           format: 'table'
