@@ -7,6 +7,15 @@ on:
       - 'terraform/**'
       - '.github/workflows/terraform-infra.yaml'
   workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform Action to perform'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
 
 permissions:
   contents: read
@@ -17,7 +26,7 @@ env:
 
 jobs:
   terraform-apply:
-    name: Terraform Init, Plan & Apply
+    name: Terraform Init & Execution
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -51,9 +60,10 @@ jobs:
         with:
           terraform_version: 1.5.7
 
-      - name: Terraform Init & Apply
+      - name: Terraform Init & Apply/Destroy
         run: |
-          echo "==> Running Non-Interactive Terraform Apply for environment: ${ENV_NAME}"
+          ACTION="${{ github.event.inputs.action || 'apply' }}"
+          echo "==> Running Non-Interactive Terraform ${ACTION} for environment: ${ENV_NAME}"
           cd terraform/environments/${ENV_NAME}
           terraform init -input=false
 
@@ -64,4 +74,10 @@ jobs:
             VAR_FLAGS="-var=project_id=${GCP_PROJECT} -var=region=${GCP_REGION} -var=github_repo=${GITHUB_REPOSITORY}"
           fi
 
-          terraform apply -input=false -auto-approve $VAR_FLAGS
+          if [ "$ACTION" == "destroy" ]; then
+            echo "==> Triggering TERRAFORM DESTROY..."
+            terraform destroy -input=false -auto-approve $VAR_FLAGS
+          else
+            echo "==> Triggering TERRAFORM APPLY..."
+            terraform apply -input=false -auto-approve $VAR_FLAGS
+          fi
