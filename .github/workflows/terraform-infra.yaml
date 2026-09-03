@@ -50,17 +50,12 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Terraform Init & Apply
         run: |
           echo "==> Running Non-Interactive Terraform Apply for environment: ${ENV_NAME}"
           cd terraform/environments/${ENV_NAME}
           terraform init -input=false
-
-          echo "==> Debugging Workspace & State Context:"
-          terraform workspace show || true
-          terraform state pull || true
 
           VAR_FLAGS=""
           if [ -f "terraform.tfvars" ]; then

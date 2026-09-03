@@ -8,12 +8,9 @@ terraform {
     }
   }
 
-  cloud {
-    organization = "Solace_Cloud_Solution"
-
-    workspaces {
-      name = "qsr-chatwoot-n8n"
-    }
+  backend "gcs" {
+    bucket = "qsr-tfstate-festive-ally-443007-r4"
+    prefix = "terraform/state/prod"
   }
 }
 
