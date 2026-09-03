@@ -69,4 +69,4 @@ jobs:
             VAR_FLAGS="-var=project_id=${GCP_PROJECT} -var=region=${GCP_REGION} -var=github_repo=${GITHUB_REPOSITORY}"
           fi
 
-          terraform apply -input=false -auto-approve $VAR_FLAGS
+          terraform apply -input=false -auto-approve -lock=false $VAR_FLAGS
