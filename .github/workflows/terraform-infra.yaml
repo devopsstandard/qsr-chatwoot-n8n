@@ -58,6 +58,10 @@ jobs:
           cd terraform/environments/${ENV_NAME}
           terraform init -input=false
 
+          echo "==> Debugging Workspace & State Context:"
+          terraform workspace show || true
+          terraform state pull || true
+
           VAR_FLAGS=""
           if [ -f "terraform.tfvars" ]; then
             VAR_FLAGS="-var-file=terraform.tfvars"
