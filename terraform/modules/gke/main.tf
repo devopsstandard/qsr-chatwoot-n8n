@@ -27,7 +27,7 @@ resource "google_project_iam_member" "node_ar_reader" {
 # Private VPC-Native GKE Standard Cluster (Control Plane & Base definition)
 resource "google_container_cluster" "primary" {
   name                     = "qsr-gke-cluster-${var.environment}"
-  location                 = var.region
+  location                 = "${var.region}-a"
   project                  = var.project_id
   network                  = var.network_id
   subnetwork               = var.subnet_id
@@ -99,7 +99,7 @@ resource "google_container_cluster" "primary" {
 # 1. On-Demand Node Pool (For Web / API / Ingress Workloads)
 resource "google_container_node_pool" "ondemand_nodes" {
   name       = "qsr-ondemand-pool-${var.environment}"
-  location   = var.region
+  location   = "${var.region}-a"
   cluster    = google_container_cluster.primary.name
   project    = var.project_id
   node_count = 1
@@ -143,7 +143,7 @@ resource "google_container_node_pool" "ondemand_nodes" {
 # 2. Spot Node Pool (For Background Workers & Retryable Queue Jobs)
 resource "google_container_node_pool" "spot_nodes" {
   name       = "qsr-spot-pool-${var.environment}"
-  location   = var.region
+  location   = "${var.region}-a"
   cluster    = google_container_cluster.primary.name
   project    = var.project_id
   node_count = 1
