@@ -57,4 +57,12 @@ jobs:
           echo "==> Running Non-Interactive Terraform Apply for environment: ${ENV_NAME}"
           cd terraform/environments/${ENV_NAME}
           terraform init -input=false
-          terraform apply -input=false -auto-approve -var-file="terraform.tfvars"
+
+          VAR_FLAGS=""
+          if [ -f "terraform.tfvars" ]; then
+            VAR_FLAGS="-var-file=terraform.tfvars"
+          else
+            VAR_FLAGS="-var=project_id=${GCP_PROJECT} -var=region=${GCP_REGION} -var=github_repo=${GITHUB_REPOSITORY}"
+          fi
+
+          terraform apply -input=false -auto-approve $VAR_FLAGS
