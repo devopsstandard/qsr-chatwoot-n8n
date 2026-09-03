@@ -68,6 +68,8 @@ jobs:
           tags: |
             ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ env.ENV_NAME }}
             ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Vulnerability Scan (Trivy CVE Audit)
         uses: aquasecurity/trivy-action@master

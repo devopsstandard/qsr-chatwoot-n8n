@@ -1,3 +1,22 @@
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.0"
+    }
+  }
+
+  cloud {
+    organization = "Solace_Cloud_Solution"
+
+    workspaces {
+      name = "qsr-chatwoot-n8n"
+    }
+  }
+}
+
 module "vpc" {
   source      = "../../modules/vpc"
   project_id  = var.project_id
