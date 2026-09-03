@@ -10,6 +10,8 @@ override.tf.json
 *_override.tf.json
 .terraform.lock.hcl
 terraform.tfvars
+sa-key.json
+*.jsonkey
 
 # Node & Build artifacts
 node_modules/
