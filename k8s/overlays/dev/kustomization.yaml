@@ -9,6 +9,7 @@ resources:
   - ../../base/common
   - ingress.yaml
   - secrets.yaml
+  - managed-cert.yaml
 
 patches:
   - path: patch-chatwoot.yaml

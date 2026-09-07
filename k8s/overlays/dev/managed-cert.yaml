@@ -1,0 +1,18 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: qsr-managed-cert
+  namespace: default
+spec:
+  domains:
+    - dev-chatwoot.devopsstandard.name.ng
+    - dev-n8n.devopsstandard.name.ng
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: qsr-frontend-config
+  namespace: default
+spec:
+  redirectToHttps:
+    enabled: true
