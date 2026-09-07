@@ -30,6 +30,22 @@ import {
   id = "projects/festive-ally-443007-r4/locations/us-central1/keyRings/qsr-keyring-prod/cryptoKeys/qsr-cmek-key"
 }
 
+# Import undeleted active Workload Identity Pool and Provider
+import {
+  to = module.wif.google_iam_workload_identity_pool.github_pool
+  id = "projects/festive-ally-443007-r4/locations/global/workloadIdentityPools/github-actions-pool-prod"
+}
+
+import {
+  to = module.wif.google_iam_workload_identity_pool_provider.github_provider
+  id = "projects/festive-ally-443007-r4/locations/global/workloadIdentityPools/github-actions-pool-prod/providers/github-actions-provider"
+}
+
+import {
+  to = module.wif.google_service_account.cicd_sa
+  id = "projects/festive-ally-443007-r4/serviceAccounts/qsr-cicd-sa-prod@festive-ally-443007-r4.iam.gserviceaccount.com"
+}
+
 module "vpc" {
   source      = "../../modules/vpc"
   project_id  = var.project_id

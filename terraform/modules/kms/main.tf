@@ -32,3 +32,21 @@ resource "google_kms_crypto_key" "cmek_key" {
     prevent_destroy = false
   }
 }
+
+data "google_project" "project" {
+  project_id = var.project_id
+}
+
+# Grant Artifact Registry SA permission to encrypt/decrypt with CMEK key
+resource "google_kms_crypto_key_iam_member" "ar_cmek" {
+  crypto_key_id = google_kms_crypto_key.cmek_key.id
+  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  member        = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-artifactregistry.iam.gserviceaccount.com"
+}
+
+# Grant Cloud SQL SA permission to encrypt/decrypt with CMEK key
+resource "google_kms_crypto_key_iam_member" "cloudsql_cmek" {
+  crypto_key_id = google_kms_crypto_key.cmek_key.id
+  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  member        = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-cloud-sql.iam.gserviceaccount.com"
+}

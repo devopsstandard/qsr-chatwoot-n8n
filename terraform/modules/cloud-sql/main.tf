@@ -4,10 +4,14 @@ resource "random_password" "db_password" {
   special = false
 }
 
+resource "random_id" "db_suffix" {
+  byte_length = 3
+}
+
 # Cloud SQL PostgreSQL Instance with Private IP & HA
 resource "google_sql_database_instance" "instance" {
-  name             = "qsr-sql-${var.instance_name_suffix}-${var.environment}"
-  database_version = var.database_version
+  name                = "qsr-sql-${var.instance_name_suffix}-${var.environment}-${random_id.db_suffix.hex}"
+  database_version    = var.database_version
   region           = var.region
   project          = var.project_id
   encryption_key_name = var.kms_key_id
