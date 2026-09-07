@@ -5,6 +5,7 @@ on:
     workflows: ["Build, Vulnerability Scan & Cosign KMS Sign"]
     types: [completed]
     branches: [ main, dev ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -17,7 +18,7 @@ jobs:
   deploy-to-gke:
     name: Kustomize Rollout to GKE
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -39,18 +40,19 @@ jobs:
           echo "WIF_PROVIDER=projects/${PROJ_NUM}/locations/global/workloadIdentityPools/github-actions-pool-${ENV_NAME}/providers/github-actions-provider" >> $GITHUB_ENV
           echo "WIF_SERVICE_ACCOUNT=qsr-cicd-sa-${ENV_NAME}@${PROJ_ID}.iam.gserviceaccount.com" >> $GITHUB_ENV
 
-      - name: Authenticate to GCP via WIF
+      - name: Authenticate to GCP (WIF with SA Key Bootstrap Fallback)
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ secrets.GCP_SA_KEY == '' && env.WIF_PROVIDER || '' }}
+          service_account: ${{ secrets.GCP_SA_KEY == '' && env.WIF_SERVICE_ACCOUNT || '' }}
 
       - name: Get GKE Credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GCP_REGION }}
+          location: ${{ env.GCP_REGION }}-a
 
       - name: Setup Kustomize
         uses: imranismail/setup-kustomize@v2

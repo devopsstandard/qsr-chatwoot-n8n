@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main, dev ]
     tags: [ 'v*' ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -40,12 +41,13 @@ jobs:
           echo "WIF_SERVICE_ACCOUNT=qsr-cicd-sa-${ENV_NAME}@${PROJ_ID}.iam.gserviceaccount.com" >> $GITHUB_ENV
           echo "KMS_KEY_ID=gcpkms://projects/${PROJ_ID}/locations/${GCP_REGION}/keyRings/qsr-keyring-${ENV_NAME}/cryptoKeys/cosign-signing-key/cryptoKeyVersions/1" >> $GITHUB_ENV
 
-      - name: Authenticate to GCP via Workload Identity Federation (WIF)
+      - name: Authenticate to GCP (WIF with SA Key Bootstrap Fallback)
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ env.WIF_PROVIDER }}
-          service_account: ${{ env.WIF_SERVICE_ACCOUNT }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ secrets.GCP_SA_KEY == '' && env.WIF_PROVIDER || '' }}
+          service_account: ${{ secrets.GCP_SA_KEY == '' && env.WIF_SERVICE_ACCOUNT || '' }}
           token_format: 'access_token'
 
       - name: Set up Docker Buildx
