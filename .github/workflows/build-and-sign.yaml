@@ -81,6 +81,7 @@ jobs:
           exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
+          scanners: 'vuln'
           severity: 'CRITICAL,HIGH'
 
       - name: Install Sigstore Cosign
@@ -88,5 +89,6 @@ jobs:
 
       - name: Sign Container Image with Cloud KMS (Cosign)
         run: |
-          echo "==> Signing image: ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ env.ENV_NAME }} with KMS key..."
-          cosign sign --key ${{ env.KMS_KEY_ID }} --yes ${{ env.AR_REPOSITORY }}/${{ matrix.service }}:${{ env.ENV_NAME }}
+          IMAGE_DIGEST="${{ env.AR_REPOSITORY }}/${{ matrix.service }}@${{ steps.build-push.outputs.digest }}"
+          echo "==> Signing image digest: ${IMAGE_DIGEST} with KMS key..."
+          cosign sign --key ${{ env.KMS_KEY_ID }} --yes ${IMAGE_DIGEST}
