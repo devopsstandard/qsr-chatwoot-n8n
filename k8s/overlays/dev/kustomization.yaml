@@ -8,3 +8,20 @@ resources:
   - ../../base/n8n
   - ../../base/common
   - ingress.yaml
+  - secrets.yaml
+
+patches:
+  - path: patch-chatwoot.yaml
+  - path: patch-n8n.yaml
+  - path: patch-common.yaml
+
+images:
+  - name: us-central1-docker.pkg.dev/qsr-platform-prod/qsr-containers-prod/chatwoot
+    newName: us-central1-docker.pkg.dev/festive-ally-443007-r4/qsr-containers-dev/chatwoot
+    newTag: dev
+  - name: us-central1-docker.pkg.dev/qsr-platform-prod/qsr-containers-prod/n8n
+    newName: us-central1-docker.pkg.dev/festive-ally-443007-r4/qsr-containers-dev/n8n
+    newTag: dev
+  - name: us-central1-docker.pkg.dev/festive-ally-443007-r4/qsr-containers-prod/n8n
+    newName: us-central1-docker.pkg.dev/festive-ally-443007-r4/qsr-containers-dev/n8n
+    newTag: dev

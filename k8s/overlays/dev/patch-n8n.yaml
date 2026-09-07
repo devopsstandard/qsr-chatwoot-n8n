@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n-main
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: n8n-main
+          env:
+            - name: DB_POSTGRESDB_DATABASE
+              value: "n8n_dev"
+            - name: DB_POSTGRESDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-credentials
+                  key: DB_POSTGRESDB_USER
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-credentials
+                  key: DB_POSTGRESDB_PASSWORD
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-credentials
+                  key: N8N_ENCRYPTION_KEY
+            - name: QUEUE_BULL_REDIS_HOST
+              value: "10.100.101.75"
+            - name: QUEUE_BULL_REDIS_PORT
+              value: "6378"
+            - name: QUEUE_BULL_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-credentials
+                  key: QUEUE_BULL_REDIS_PASSWORD
+            - name: QUEUE_BULL_REDIS_TLS_ENABLED
+              value: "true"
+            - name: N8N_HOST
+              value: "dev-n8n.devopsstandard.name.ng"
+            - name: WEBHOOK_URL
+              value: "https://dev-n8n.devopsstandard.name.ng/"
+        - name: cloud-sql-proxy
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "festive-ally-443007-r4:us-central1:qsr-sql-n8n-psql-dev-3d999d"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n-worker
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: n8n-worker
+          env:
+            - name: DB_POSTGRESDB_DATABASE
+              value: "n8n_dev"
+            - name: DB_POSTGRESDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-credentials
+                  key: DB_POSTGRESDB_USER
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-credentials
+                  key: DB_POSTGRESDB_PASSWORD
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-credentials
+                  key: N8N_ENCRYPTION_KEY
+            - name: QUEUE_BULL_REDIS_HOST
+              value: "10.100.101.75"
+            - name: QUEUE_BULL_REDIS_PORT
+              value: "6378"
+            - name: QUEUE_BULL_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-credentials
+                  key: QUEUE_BULL_REDIS_PASSWORD
+            - name: QUEUE_BULL_REDIS_TLS_ENABLED
+              value: "true"
+        - name: cloud-sql-proxy
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "festive-ally-443007-r4:us-central1:qsr-sql-n8n-psql-dev-3d999d"

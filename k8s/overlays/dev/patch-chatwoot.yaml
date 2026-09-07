@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatwoot-web
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: chatwoot-web
+          env:
+            - name: POSTGRES_DATABASE
+              value: "chatwoot_dev"
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: chatwoot-credentials
+                  key: POSTGRES_USERNAME
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: chatwoot-credentials
+                  key: POSTGRES_PASSWORD
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: chatwoot-credentials
+                  key: SECRET_KEY_BASE
+            - name: REDIS_URL
+              value: "rediss://default:734701b3-20ff-4559-aeb5-801e306ed26d@10.100.101.75:6378"
+            - name: REDIS_OPENSSL_VERIFY_MODE
+              value: "none"
+            - name: FRONTEND_URL
+              value: "https://dev-chatwoot.devopsstandard.name.ng"
+            - name: ACTIVE_STORAGE_SERVICE
+              value: "local"
+            - name: DB_PREPARE
+              value: "true"
+        - name: cloud-sql-proxy
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "festive-ally-443007-r4:us-central1:qsr-sql-cw-psql-dev-0a3b64"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatwoot-worker
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: chatwoot-worker
+          env:
+            - name: POSTGRES_DATABASE
+              value: "chatwoot_dev"
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: chatwoot-credentials
+                  key: POSTGRES_USERNAME
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: chatwoot-credentials
+                  key: POSTGRES_PASSWORD
+            - name: SECRET_KEY_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: chatwoot-credentials
+                  key: SECRET_KEY_BASE
+            - name: REDIS_URL
+              value: "rediss://default:734701b3-20ff-4559-aeb5-801e306ed26d@10.100.101.75:6378"
+            - name: REDIS_OPENSSL_VERIFY_MODE
+              value: "none"
+            - name: FRONTEND_URL
+              value: "https://dev-chatwoot.devopsstandard.name.ng"
+            - name: ACTIVE_STORAGE_SERVICE
+              value: "local"
+        - name: cloud-sql-proxy
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "festive-ally-443007-r4:us-central1:qsr-sql-cw-psql-dev-0a3b64"

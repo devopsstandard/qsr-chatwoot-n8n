@@ -57,6 +57,15 @@ jobs:
       - name: Setup Kustomize
         uses: imranismail/setup-kustomize@v2
 
+      - name: Ensure KEDA CRDs & Operator
+        run: |
+          if ! kubectl get crd scaledobjects.keda.sh >/dev/null 2>&1; then
+            echo "==> Installing KEDA CRDs & controller on cluster..."
+            kubectl apply --server-side -f https://github.com/kedacore/keda/releases/download/v2.14.0/keda-2.14.0.yaml
+          else
+            echo "==> KEDA is already installed on the cluster."
+          fi
+
       - name: Apply Kustomize Overlay
         run: |
           echo "==> Deploying to GKE environment: ${ENV_NAME}"
@@ -64,9 +73,16 @@ jobs:
 
       - name: Verify Rollout Status
         run: |
-          echo "==> Verifying rollout status for all services in parallel..."
-          kubectl rollout status deployment/chatwoot-web -n default --timeout=120s &
-          kubectl rollout status deployment/chatwoot-worker -n default --timeout=120s &
-          kubectl rollout status deployment/n8n-main -n default --timeout=120s &
-          kubectl rollout status deployment/n8n-worker -n default --timeout=120s &
-          wait
+          echo "==> Verifying rollout status for all deployments..."
+          kubectl rollout status deployment/${ENV_NAME}-chatwoot-web -n default --timeout=300s
+          kubectl rollout status deployment/${ENV_NAME}-chatwoot-worker -n default --timeout=300s
+          kubectl rollout status deployment/${ENV_NAME}-n8n-main -n default --timeout=300s
+          kubectl rollout status deployment/${ENV_NAME}-n8n-worker -n default --timeout=300s
+
+      - name: Inspect Workloads and Ingress
+        if: always()
+        run: |
+          echo "==> Current Pods:"
+          kubectl get pods -n default -o wide
+          echo "==> Current Ingress:"
+          kubectl get ingress -n default

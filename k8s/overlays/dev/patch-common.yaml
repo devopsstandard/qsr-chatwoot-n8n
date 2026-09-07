@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloudsql-proxy-sa
+  namespace: default
+  annotations:
+    iam.gke.io/gcp-service-account: "qsr-workload-sa-dev@festive-ally-443007-r4.iam.gserviceaccount.com"
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: gcp-secret-provider
+  namespace: default
+spec:
+  provider: gcp
+  parameters:
+    secrets: |
+      - resourceName: "projects/festive-ally-443007-r4/secrets/agentops-api-key-dev/versions/latest"
+        fileName: "agentops-api-key"
+      - resourceName: "projects/festive-ally-443007-r4/secrets/slack-bot-token-dev/versions/latest"
+        fileName: "slack-bot-token"
+      - resourceName: "projects/festive-ally-443007-r4/secrets/slack-signing-secret-dev/versions/latest"
+        fileName: "slack-signing-secret"
+      - resourceName: "projects/festive-ally-443007-r4/secrets/chatwoot-secret-key-base-dev/versions/latest"
+        fileName: "chatwoot-secret-key-base"
+      - resourceName: "projects/festive-ally-443007-r4/secrets/n8n-encryption-key-dev/versions/latest"
+        fileName: "n8n-encryption-key"
