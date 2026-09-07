@@ -10,6 +10,10 @@ spec:
       containers:
         - name: n8n-main
           env:
+            - name: EXECUTIONS_MODE
+              value: "regular"
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: "0"
             - name: DB_POSTGRESDB_DATABASE
               value: "n8n_dev"
             - name: DB_POSTGRESDB_USER
@@ -36,10 +40,10 @@ spec:
                 secretKeyRef:
                   name: n8n-credentials
                   key: QUEUE_BULL_REDIS_PASSWORD
+            - name: QUEUE_BULL_REDIS_TLS
+              value: "true"
             - name: QUEUE_BULL_REDIS_TLS_ENABLED
               value: "true"
-            - name: QUEUE_BULL_REDIS_TLS
-              value: "{\"rejectUnauthorized\":false}"
             - name: N8N_HOST
               value: "dev-n8n.devopsstandard.name.ng"
             - name: WEBHOOK_URL
@@ -57,12 +61,14 @@ metadata:
   name: n8n-worker
   namespace: default
 spec:
-  replicas: 1
+  replicas: 0
   template:
     spec:
       containers:
         - name: n8n-worker
           env:
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: "0"
             - name: DB_POSTGRESDB_DATABASE
               value: "n8n_dev"
             - name: DB_POSTGRESDB_USER
@@ -89,10 +95,10 @@ spec:
                 secretKeyRef:
                   name: n8n-credentials
                   key: QUEUE_BULL_REDIS_PASSWORD
+            - name: QUEUE_BULL_REDIS_TLS
+              value: "true"
             - name: QUEUE_BULL_REDIS_TLS_ENABLED
               value: "true"
-            - name: QUEUE_BULL_REDIS_TLS
-              value: "{\"rejectUnauthorized\":false}"
         - name: cloud-sql-proxy
           args:
             - "--structured-logs"

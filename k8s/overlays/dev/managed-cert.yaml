@@ -16,4 +16,4 @@ metadata:
   namespace: default
 spec:
   redirectToHttps:
-    enabled: true
+    enabled: false
