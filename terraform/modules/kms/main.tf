@@ -44,13 +44,3 @@ resource "google_kms_crypto_key_iam_member" "ar_cmek" {
   member        = "serviceAccount:service-${data.google_project.project.number}@gcp-sa-artifactregistry.iam.gserviceaccount.com"
 }
 
-data "google_sql_service_account" "default" {
-  project = var.project_id
-}
-
-# Grant Cloud SQL SA permission to encrypt/decrypt with CMEK key
-resource "google_kms_crypto_key_iam_member" "cloudsql_cmek" {
-  crypto_key_id = google_kms_crypto_key.cmek_key.id
-  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
-  member        = "serviceAccount:${data.google_sql_service_account.default.email_address}"
-}

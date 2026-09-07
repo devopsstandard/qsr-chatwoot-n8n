@@ -96,7 +96,6 @@ module "cloud_sql_chatwoot" {
   database_user        = "chatwoot_user"
   tier                 = "db-custom-2-7680"
   availability_type    = "ZONAL" # Zonal for dev cost-optimization
-  kms_key_id           = module.kms.cmek_key_id
 }
 
 # Isolated Cloud SQL Instance for n8n
@@ -112,7 +111,6 @@ module "cloud_sql_n8n" {
   database_user        = "n8n_user"
   tier                 = "db-custom-2-7680"
   availability_type    = "ZONAL" # Zonal for dev cost-optimization
-  kms_key_id           = module.kms.cmek_key_id
 }
 
 # Memorystore Redis for Queue Management
