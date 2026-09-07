@@ -30,12 +30,6 @@ import {
   id = "projects/festive-ally-443007-r4/locations/us-central1/keyRings/qsr-keyring-prod/cryptoKeys/qsr-cmek-key"
 }
 
-# Import existing Artifact Registry repository
-import {
-  to = module.artifact_registry.google_artifact_registry_repository.repo
-  id = "projects/festive-ally-443007-r4/locations/us-central1/repositories/qsr-containers-prod"
-}
-
 module "vpc" {
   source      = "../../modules/vpc"
   project_id  = var.project_id

@@ -30,12 +30,6 @@ import {
   id = "projects/festive-ally-443007-r4/locations/us-central1/keyRings/qsr-keyring-dev/cryptoKeys/qsr-cmek-key"
 }
 
-# Import existing Artifact Registry repository
-import {
-  to = module.artifact_registry.google_artifact_registry_repository.repo
-  id = "projects/festive-ally-443007-r4/locations/us-central1/repositories/qsr-containers-dev"
-}
-
 # Import undeleted active Workload Identity Pool
 import {
   to = module.wif.google_iam_workload_identity_pool.github_pool
