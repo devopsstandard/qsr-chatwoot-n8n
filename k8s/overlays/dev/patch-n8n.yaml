@@ -38,6 +38,8 @@ spec:
                   key: QUEUE_BULL_REDIS_PASSWORD
             - name: QUEUE_BULL_REDIS_TLS_ENABLED
               value: "true"
+            - name: QUEUE_BULL_REDIS_TLS
+              value: "{\"rejectUnauthorized\":false}"
             - name: N8N_HOST
               value: "dev-n8n.devopsstandard.name.ng"
             - name: WEBHOOK_URL
@@ -45,6 +47,7 @@ spec:
         - name: cloud-sql-proxy
           args:
             - "--structured-logs"
+            - "--private-ip"
             - "--port=5432"
             - "festive-ally-443007-r4:us-central1:qsr-sql-n8n-psql-dev-3d999d"
 ---
@@ -88,8 +91,11 @@ spec:
                   key: QUEUE_BULL_REDIS_PASSWORD
             - name: QUEUE_BULL_REDIS_TLS_ENABLED
               value: "true"
+            - name: QUEUE_BULL_REDIS_TLS
+              value: "{\"rejectUnauthorized\":false}"
         - name: cloud-sql-proxy
           args:
             - "--structured-logs"
+            - "--private-ip"
             - "--port=5432"
             - "festive-ally-443007-r4:us-central1:qsr-sql-n8n-psql-dev-3d999d"

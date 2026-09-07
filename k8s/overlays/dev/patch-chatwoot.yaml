@@ -9,6 +9,7 @@ spec:
     spec:
       containers:
         - name: chatwoot-web
+          command: ["sh", "/app/docker/chatwoot/entrypoint.sh", "bundle", "exec", "rails", "s", "-b", "0.0.0.0", "-p", "3000"]
           env:
             - name: POSTGRES_DATABASE
               value: "chatwoot_dev"
@@ -37,11 +38,18 @@ spec:
               value: "local"
             - name: DB_PREPARE
               value: "true"
+          volumeMounts:
+            - name: chatwoot-tmp
+              mountPath: /app/tmp
         - name: cloud-sql-proxy
           args:
             - "--structured-logs"
+            - "--private-ip"
             - "--port=5432"
             - "festive-ally-443007-r4:us-central1:qsr-sql-cw-psql-dev-0a3b64"
+      volumes:
+        - name: chatwoot-tmp
+          emptyDir: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -54,6 +62,7 @@ spec:
     spec:
       containers:
         - name: chatwoot-worker
+          command: ["sh", "/app/docker/chatwoot/entrypoint.sh", "bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
           env:
             - name: POSTGRES_DATABASE
               value: "chatwoot_dev"
@@ -80,8 +89,15 @@ spec:
               value: "https://dev-chatwoot.devopsstandard.name.ng"
             - name: ACTIVE_STORAGE_SERVICE
               value: "local"
+          volumeMounts:
+            - name: chatwoot-tmp
+              mountPath: /app/tmp
         - name: cloud-sql-proxy
           args:
             - "--structured-logs"
+            - "--private-ip"
             - "--port=5432"
             - "festive-ally-443007-r4:us-central1:qsr-sql-cw-psql-dev-0a3b64"
+      volumes:
+        - name: chatwoot-tmp
+          emptyDir: {}
