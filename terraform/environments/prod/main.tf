@@ -30,12 +30,6 @@ import {
   id = "projects/festive-ally-443007-r4/locations/us-central1/keyRings/qsr-keyring-prod/cryptoKeys/qsr-cmek-key"
 }
 
-# Import existing permanent/soft-deleted Workload Identity Pool into state
-import {
-  to = module.wif.google_iam_workload_identity_pool.github_pool
-  id = "projects/festive-ally-443007-r4/locations/global/workloadIdentityPools/github-actions-pool-prod"
-}
-
 module "vpc" {
   source      = "../../modules/vpc"
   project_id  = var.project_id
