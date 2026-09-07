@@ -65,7 +65,7 @@ jobs:
           ACTION="${{ github.event.inputs.action || 'apply' }}"
           echo "==> Running Non-Interactive Terraform ${ACTION} for environment: ${ENV_NAME}"
           cd terraform/environments/${ENV_NAME}
-          terraform init -input=false
+          terraform init -reconfigure -input=false
 
           VAR_FLAGS=""
           if [ -f "terraform.tfvars" ]; then
