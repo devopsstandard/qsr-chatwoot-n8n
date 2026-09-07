@@ -89,7 +89,7 @@ module "cloud_sql_chatwoot" {
   project_id           = var.project_id
   region               = var.region
   environment          = "dev"
-  instance_name_suffix = "chatwoot-db"
+  instance_name_suffix = "cw-psql"
   network_id           = module.vpc.network_id
   psa_connection_id    = module.vpc.psa_connection_id
   database_name        = "chatwoot_dev"
@@ -105,7 +105,7 @@ module "cloud_sql_n8n" {
   project_id           = var.project_id
   region               = var.region
   environment          = "dev"
-  instance_name_suffix = "n8n-db"
+  instance_name_suffix = "n8n-psql"
   network_id           = module.vpc.network_id
   psa_connection_id    = module.vpc.psa_connection_id
   database_name        = "n8n_dev"

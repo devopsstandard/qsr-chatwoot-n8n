@@ -6,6 +6,10 @@ resource "random_password" "db_password" {
 
 resource "random_id" "db_suffix" {
   byte_length = 3
+  keepers = {
+    suffix = var.instance_name_suffix
+    env    = var.environment
+  }
 }
 
 # Cloud SQL PostgreSQL Instance with Private IP & HA
