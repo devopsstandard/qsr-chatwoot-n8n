@@ -10,6 +10,8 @@ spec:
       containers:
         - name: n8n-main
           env:
+            - name: N8N_SECURE_COOKIE
+              value: "false"
             - name: EXECUTIONS_MODE
               value: "regular"
             - name: NODE_TLS_REJECT_UNAUTHORIZED
