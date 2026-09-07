@@ -7,6 +7,7 @@ resources:
   - ../../base/chatwoot
   - ../../base/n8n
   - ../../base/common
+  - ../../base/headlamp
   - ingress.yaml
   - secrets.yaml
   - managed-cert.yaml

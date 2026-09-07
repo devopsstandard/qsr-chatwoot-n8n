@@ -29,3 +29,13 @@ spec:
                 name: n8n-service
                 port:
                   number: 80
+    - host: dev-headlamp.devopsstandard.name.ng
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: headlamp-service
+                port:
+                  number: 80
