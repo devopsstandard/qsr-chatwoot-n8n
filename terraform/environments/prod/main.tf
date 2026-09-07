@@ -30,6 +30,12 @@ import {
   id = "projects/festive-ally-443007-r4/locations/us-central1/keyRings/qsr-keyring-prod/cryptoKeys/qsr-cmek-key"
 }
 
+# Import existing Artifact Registry repository
+import {
+  to = module.artifact_registry.google_artifact_registry_repository.repo
+  id = "projects/festive-ally-443007-r4/locations/us-central1/repositories/qsr-containers-prod"
+}
+
 module "vpc" {
   source      = "../../modules/vpc"
   project_id  = var.project_id
@@ -73,7 +79,7 @@ module "cloud_sql_chatwoot" {
   project_id           = var.project_id
   region               = var.region
   environment          = "prod"
-  instance_name_suffix = "chatwoot"
+  instance_name_suffix = "chatwoot-db"
   network_id           = module.vpc.network_id
   psa_connection_id    = module.vpc.psa_connection_id
   database_name        = "chatwoot_production"
@@ -89,7 +95,7 @@ module "cloud_sql_n8n" {
   project_id           = var.project_id
   region               = var.region
   environment          = "prod"
-  instance_name_suffix = "n8n"
+  instance_name_suffix = "n8n-db"
   network_id           = module.vpc.network_id
   psa_connection_id    = module.vpc.psa_connection_id
   database_name        = "n8n_production"
