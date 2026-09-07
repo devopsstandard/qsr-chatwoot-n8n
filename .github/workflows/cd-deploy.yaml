@@ -34,7 +34,11 @@ jobs:
           echo "GCP_PROJECT_NUMBER=${PROJ_NUM}" >> $GITHUB_ENV
 
           HEAD_BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
-          ENV_NAME="${{ (HEAD_BRANCH == 'main' || HEAD_BRANCH == 'refs/heads/main') && 'prod' || 'dev' }}"
+          if [ "$HEAD_BRANCH" = "main" ] || [ "$HEAD_BRANCH" = "refs/heads/main" ]; then
+            ENV_NAME="prod"
+          else
+            ENV_NAME="dev"
+          fi
           echo "ENV_NAME=${ENV_NAME}" >> $GITHUB_ENV
           echo "GKE_CLUSTER=qsr-gke-cluster-${ENV_NAME}" >> $GITHUB_ENV
           echo "WIF_PROVIDER=projects/${PROJ_NUM}/locations/global/workloadIdentityPools/github-actions-pool-${ENV_NAME}/providers/github-actions-provider" >> $GITHUB_ENV
