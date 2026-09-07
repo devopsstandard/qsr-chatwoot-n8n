@@ -128,8 +128,8 @@ resource "google_container_node_pool" "ondemand_nodes" {
 
     labels = {
       "workload-type"             = "ondemand"
-      "app.kubernetes.io/env"     = var.environment
-      "app.kubernetes.io/part-of" = "qsr-platform"
+      "environment"               = var.environment
+      "part-of"                   = "qsr-platform"
     }
 
     tags = ["qsr-gke-node", "qsr-ondemand-node"]
@@ -179,8 +179,8 @@ resource "google_container_node_pool" "spot_nodes" {
     labels = {
       "workload-type"              = "spot"
       "cloud.google.com/gke-spot"  = "true"
-      "app.kubernetes.io/env"      = var.environment
-      "app.kubernetes.io/part-of"  = "qsr-platform"
+      "environment"                = var.environment
+      "part-of"                    = "qsr-platform"
     }
 
     tags = ["qsr-gke-node", "qsr-spot-node"]

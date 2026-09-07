@@ -14,6 +14,28 @@ terraform {
   }
 }
 
+# Import existing permanent GCP KMS KeyRing and Keys into state
+import {
+  to = module.kms.google_kms_key_ring.keyring
+  id = "projects/festive-ally-443007-r4/locations/us-central1/keyRings/qsr-keyring-dev"
+}
+
+import {
+  to = module.kms.google_kms_crypto_key.cosign_key
+  id = "projects/festive-ally-443007-r4/locations/us-central1/keyRings/qsr-keyring-dev/cryptoKeys/cosign-signing-key"
+}
+
+import {
+  to = module.kms.google_kms_crypto_key.cmek_key
+  id = "projects/festive-ally-443007-r4/locations/us-central1/keyRings/qsr-keyring-dev/cryptoKeys/qsr-cmek-key"
+}
+
+# Import existing permanent/soft-deleted Workload Identity Pool into state
+import {
+  to = module.wif.google_iam_workload_identity_pool.github_pool
+  id = "projects/festive-ally-443007-r4/locations/global/workloadIdentityPools/github-actions-pool-dev"
+}
+
 module "vpc" {
   source      = "../../modules/vpc"
   project_id  = var.project_id
